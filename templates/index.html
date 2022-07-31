@@ -9,6 +9,12 @@
     Hello,{% if name %}{{ name }}{% else %}unknown{% endif %}
   </h1>
 
-  {{ wtf.quick_form(form) }}
+  {% if not known %}
+    <p>Nice to meet you !</p>
+  {% else  %}
+    <p>Nice to meet you again !</p>
+  {% endif %}
+
 </div>
+{{ wtf.quick_form(form) }}
 {% endblock %}
