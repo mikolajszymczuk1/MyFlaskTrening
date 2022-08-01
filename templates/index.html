@@ -14,7 +14,29 @@
   {% else  %}
     <p>Nice to meet you again !</p>
   {% endif %}
-
 </div>
 {{ wtf.quick_form(form) }}
+
+<hr>
+
+{% if users %}
+<table class="table table-striped">
+  <thead>
+    <th>id</th>
+    <th>username</th>
+  </thead>
+
+  <tbody>
+    {% for user in users %}
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No users !</p>
+{% endif %}
+
 {% endblock %}

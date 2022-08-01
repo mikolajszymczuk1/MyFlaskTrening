@@ -2,6 +2,7 @@ from enum import unique
 from flask import Flask, redirect, session, url_for, render_template, flash
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
+from flask_migrate import Migrate
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
@@ -18,6 +19,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 Bootstrap(app)
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 # Flask shell config
 
@@ -58,6 +60,8 @@ class NameForm(FlaskForm):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     form = NameForm()
+    all_users = User.query.all()
+
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.name.data).first()
         if user is None:
@@ -72,7 +76,8 @@ def index():
         form.name.data = ''
         return redirect(url_for('user', name=session.get('name')))
 
-    return render_template('index.html', form=form, name=session.get('name'), known=session.get('known', False))
+    return render_template('index.html',
+        form=form, name=session.get('name'), known=session.get('known', False), users=all_users)
 
 # User endpoint
 @app.get('/user/<string:name>')
