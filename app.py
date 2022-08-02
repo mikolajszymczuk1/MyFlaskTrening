@@ -6,20 +6,55 @@ from flask_migrate import Migrate
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail, Message
 from os import environ
+from threading import Thread
 
 # Flask config
 
 MYSQL_URI = 'mysql://root:{}@localhost/testFlask'.format(environ.get('DATABASE_PASSWORD'))
 
 app = Flask(__name__)
+
+# Database config
 app.config['SECRET_KEY'] = 'some secret key'
 app.config['SQLALCHEMY_DATABASE_URI'] = MYSQL_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Mail config
+app.config['MAIL_SERVER'] = 'smtp.wp.pl'
+app.config['MAIL_PORT'] = '465'
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = environ.get('MAIL_PASSWORD')
+
+# Mail utils
+
+app.config['APP_MAIL_SUBJECT_PREFIX'] = '[App]'
+app.config['APP_MAIL_SENDER'] = 'App Admin <fela55555@wp.pl>'
+app.config['APP_ADMIN'] = environ.get('APP_ADMIN')
+
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+def send_email(to, subject, template, **kwargs):
+    """ Function to sending mails """
+
+    msg = Message(app.config['APP_MAIL_SUBJECT_PREFIX'] + subject,
+                  sender=app.config['APP_MAIL_SENDER'], recipients=[to])
+    msg.body = render_template(template + '.txt', **kwargs)
+    msg.html = render_template(template + '.html', **kwargs)
+    thr = Thread(target=send_async_email, args=[app, msg])
+    thr.start()
+    return thr
+
+# Packages init
+
 Bootstrap(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+mail = Mail(app)
 
 # Flask shell config
 
@@ -69,6 +104,9 @@ def index():
             db.session.add(user)
             db.session.commit()
             session['known'] = False
+
+            if app.config['APP_ADMIN']:
+                send_email(app.config['APP_ADMIN'], 'New User !', 'mail/new_user', user=user)
         else:
             session['known'] = True
 
