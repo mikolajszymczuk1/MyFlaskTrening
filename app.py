@@ -1,4 +1,3 @@
-from enum import unique
 from flask import Flask, redirect, session, url_for, render_template, flash
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
