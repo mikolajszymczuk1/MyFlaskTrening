@@ -3,7 +3,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 basedir = os.path.abspath(os.path.dirname(__file__))
-MYSQL_URI = 'mysql://root:{}@localhost/testFlask'.format(os.getenv('DATABASE_PASSWORD'))
+MYSQL_URI = 'mysql://root:{}@localhost/Flask'.format(os.getenv('DATABASE_PASSWORD'))
+MYSQL_TEST_URI = 'mysql://root:{}@localhost/testFlask'.format(os.getenv('DATABASE_PASSWORD'))
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY') or 'some secret key'
@@ -27,7 +28,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = MYSQL_URI
+    SQLALCHEMY_DATABASE_URI = MYSQL_TEST_URI
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = MYSQL_URI
