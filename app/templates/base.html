@@ -27,6 +27,18 @@
           <a href="{{ url_for('main.index') }}">Home page</a>
         </li>
       </ul>
+
+      <ul class="nav navbar-nav navbar-right">
+        {% if current_user.is_authenticated %}
+          <li>
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+          </li>
+        {% else %}
+          <li>
+            <a href="{{ url_for('auth.login') }}">Login</a>
+          </li>
+        {% endif %}
+      </ul>
     </div>
   </div>
 </div>
