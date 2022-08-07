@@ -9,7 +9,7 @@ bootstrap = Bootstrap()
 mail = Mail()
 db = SQLAlchemy()
 login_manager = LoginManager()
-login_manager.login_view = 'auth.login'  # type: ignore
+login_manager.login_view = 'auth.login'
 
 
 def create_app(config_name: str):

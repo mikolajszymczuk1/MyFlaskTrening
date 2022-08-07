@@ -47,7 +47,7 @@ def register():
     if form.validate_on_submit():
         user = User(email=form.email.data,
                     username=form.username.data,
-                    password=form.password.data)  # type: ignore
+                    password=form.password.data)
 
         db.session.add(user)
         db.session.commit()
@@ -68,10 +68,10 @@ def secret():
 @auth.get('/confirm/<string:token>')
 @login_required
 def confirm(token):
-    if current_user.confirmed:  # type: ignore
+    if current_user.confirmed:
         return redirect(url_for('main.index'))
 
-    if current_user.confirm(token):  # type: ignore
+    if current_user.confirm(token):
         db.session.commit()
         flash('You confirmed your account, thank you !')
     else:

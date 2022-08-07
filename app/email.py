@@ -12,7 +12,7 @@ def send_async_email(app: Flask, msg: Message) -> None:
 def send_email(to: str, subject: str, template: str, **kwargs) -> Thread:
     """ Function to sending mails """
 
-    app = current_app._get_current_object()  # type: ignore
+    app = current_app._get_current_object()
     msg = Message(app.config['APP_MAIL_SUBJECT_PREFIX'] + subject,
                   sender=app.config['APP_MAIL_SENDER'], recipients=[to])
     msg.body = render_template(template + '.txt', **kwargs)
