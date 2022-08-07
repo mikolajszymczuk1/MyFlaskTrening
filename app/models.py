@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import login_manager
 from flask_login import UserMixin
 
+
 class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
@@ -11,6 +12,7 @@ class Role(db.Model):
 
     def __repr__(self) -> str:
         return '<Role %r' % self.name
+
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'

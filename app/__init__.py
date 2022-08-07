@@ -11,6 +11,7 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'  # type: ignore
 
+
 def create_app(config_name: str):
     app = Flask(__name__)
     app.config.from_object(config[config_name])

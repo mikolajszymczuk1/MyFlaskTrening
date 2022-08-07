@@ -3,14 +3,16 @@ from flask_mail import Message
 from . import mail
 from threading import Thread
 
+
 def send_async_email(app: Flask, msg: Message) -> None:
     with app.app_context():
         mail.send(msg)
 
+
 def send_email(to: str, subject: str, template: str, **kwargs) -> Thread:
     """ Function to sending mails """
 
-    app = current_app._get_current_object()
+    app = current_app._get_current_object()  # type: ignore
     msg = Message(app.config['APP_MAIL_SUBJECT_PREFIX'] + subject,
                   sender=app.config['APP_MAIL_SENDER'], recipients=[to])
     msg.body = render_template(template + '.txt', **kwargs)

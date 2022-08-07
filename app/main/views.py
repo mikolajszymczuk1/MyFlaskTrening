@@ -6,6 +6,7 @@ from .. import db
 from ..models import User
 from ..email import send_email
 
+
 # Index endpoint
 @main.route('/', methods=['GET', 'POST'])
 def index():
@@ -15,7 +16,7 @@ def index():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.name.data).first()
         if user is None:
-            user = User(username=form.name.data)
+            user = User(username=form.name.data)  # type: ignore
             db.session.add(user)
             db.session.commit()
             session['known'] = False
@@ -31,6 +32,7 @@ def index():
 
     return render_template('index.html',
         form=form, name=session.get('name'), known=session.get('known', False), users=all_users)
+
 
 # User endpoint
 @main.get('/user/<string:name>')
