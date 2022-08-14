@@ -39,3 +39,19 @@ class ChangePasswordForm(FlaskForm):
 
     repeat_password = PasswordField('Repeat new password', validators=[DataRequired()])
     submit = SubmitField('Change')
+
+
+class ForgotPasswordForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Length(1, 64), Email()])
+    submit = SubmitField('Send reset link')
+
+    def validate_email(self, field):
+        if User.query.filter_by(email=field.data).first() is None:
+            raise ValidationError('We can not find account with this email !')
+
+
+class ResetPasswordForm(FlaskForm):
+    new_password = PasswordField('New password', validators=[DataRequired(), EqualTo('repeat_password',
+        message='Passwords must be the same !')])
+    repeat_password = PasswordField('Repeat new password', validators=[DataRequired()])
+    submit = SubmitField('Reset password')

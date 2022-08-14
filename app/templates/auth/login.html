@@ -17,6 +17,9 @@
 
 <div class="col-md-4">
   {{ wtf.quick_form(form) }}
-</div>
 
+  <p class="margin-top">
+      <a href="{{ url_for('auth.forgot_password') }}">Forgot Password</a>
+  </p>
+</div>
 {% endblock %}
