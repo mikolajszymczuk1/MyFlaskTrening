@@ -50,3 +50,22 @@ class UserModelTestCase(unittest.TestCase):
         db.session.commit()
         token = u1.generate_confirmation_token()
         self.assertFalse(u2.confirm(token))
+
+    def test_valid_change_email_token(self) -> None:
+        u = User(email='test@gmail.com', password='test')
+        db.session.add(u)
+        db.session.commit()
+        token = u.generate_change_email_token('new-test@gmail.com')
+        self.assertTrue(u.confirm(token))
+        self.assertEqual(u.email, 'new-test@gmail.com')
+
+    def test_invalid_change_email_token(self) -> None:
+        u1 = User(email='test1@gmail.com', password='test')
+        u2 = User(email='test2@gmail.com', password='test2')
+        db.session.add(u1)
+        db.session.add(u2)
+        db.session.commit()
+        token = u1.generate_change_email_token('new-test1@gmail.com')
+        self.assertFalse(u2.confirm(token))
+        self.assertEqual(u1.email, 'test1@gmail.com')
+        self.assertEqual(u2.email, 'test2@gmail.com')

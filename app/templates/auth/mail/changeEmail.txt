@@ -1,0 +1,11 @@
+Dear {{ user.username }},
+
+To change email in your account please click on the following link:
+
+{{ url_for('auth.confirm_change_email', token=token, _external=True) }}
+
+Sincerely,
+
+Trening Flask App
+
+Note: replies to this email address are not monitored.

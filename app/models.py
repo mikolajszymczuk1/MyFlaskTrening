@@ -43,6 +43,10 @@ class User(UserMixin, db.Model):
         s = URLSafeSerializer(current_app.config['SECRET_KEY'])
         return s.dumps({ 'confirm': self.id })
 
+    def generate_change_email_token(self, newEmail):
+        s = URLSafeSerializer(current_app.config['SECRET_KEY'])
+        return s.dumps({ 'confirm': self.id, 'newEmail': newEmail })
+
     def confirm(self, token):
         s = URLSafeSerializer(current_app.config['SECRET_KEY'])
 
@@ -55,6 +59,10 @@ class User(UserMixin, db.Model):
             return False
 
         self.confirmed = True
+        newEmail = data.get('newEmail')
+        if newEmail and newEmail != '':
+            self.email = data.get('newEmail')
+
         db.session.add(self)
         return True
 

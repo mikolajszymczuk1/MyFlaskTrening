@@ -55,3 +55,8 @@ class ResetPasswordForm(FlaskForm):
         message='Passwords must be the same !')])
     repeat_password = PasswordField('Repeat new password', validators=[DataRequired()])
     submit = SubmitField('Reset password')
+
+
+class ChangeEmailForm(FlaskForm):
+    new_email = StringField('New Email', validators=[DataRequired(), Length(1, 64), Email()])
+    submit = SubmitField('Change email')

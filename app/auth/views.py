@@ -7,7 +7,8 @@ from .forms import (
     RegistrationForm,
     ChangePasswordForm,
     ForgotPasswordForm,
-    ResetPasswordForm
+    ResetPasswordForm,
+    ChangeEmailForm
 )
 from .. import db
 from ..email import send_email
@@ -155,3 +156,28 @@ def reset_password(token):
         return redirect(url_for('auth.login'))
 
     return render_template('auth/resetPassword.html', form=form)
+
+
+@auth.route('/change-email', methods=['GET', 'POST'])
+@login_required
+def change_email():
+    form = ChangeEmailForm()
+    if form.validate_on_submit():
+        token = current_user.generate_change_email_token(form.new_email.data)
+        send_email(current_user.email, 'Change email link', 'auth/mail/changeEmail', user=current_user, token=token)
+        flash('We have sent a message with a link for confirm email change operation for your account')
+        return redirect(url_for('main.index'))
+
+    return render_template('auth/changeEmail.html', form=form)
+
+
+@auth.get('/confirm-change-email/<string:token>')
+@login_required
+def confirm_change_email(token):
+    if current_user.confirm(token):
+        db.session.commit()
+        flash('Your email was changed !')
+    else:
+        flash('Change email link is invalid')
+    
+    return redirect(url_for('main.index'))
