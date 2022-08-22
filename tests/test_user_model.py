@@ -1,6 +1,5 @@
 import unittest
 from app.models import User
-from itsdangerous.url_safe import URLSafeSerializer
 from app import create_app, db
 
 
