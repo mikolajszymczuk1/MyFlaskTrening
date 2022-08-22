@@ -1,7 +1,7 @@
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import login_manager
-from flask_login import UserMixin, AnonymousMixin
+from flask_login import UserMixin, AnonymousUserMixin
 from flask import current_app
 from itsdangerous.url_safe import URLSafeSerializer
 
@@ -135,7 +135,7 @@ def load_user(user_id: int) -> User:
     return User.query.get(int(user_id))
 
 
-class AnonymousUser(AnonymousMixin):
+class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
         return False
 
