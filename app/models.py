@@ -6,7 +6,7 @@ from flask import current_app
 from itsdangerous.url_safe import URLSafeSerializer
 
 
-class Permissions:
+class Permission:
     FOLLOW = 1
     COMMENT = 2
     WRITE = 4
@@ -25,9 +25,9 @@ class Role(db.Model):
     @staticmethod
     def insert_roles():
         roles = {
-            'User': [Permissions.FOLLOW, Permissions.COMMENT, Permissions.WRITE],
-            'Moderator': [Permissions.FOLLOW, Permissions.COMMENT, Permissions.WRITE, Permissions.MODERATE],
-            'Administrator': [Permissions.FOLLOW, Permissions.COMMENT, Permissions.WRITE, Permissions.MODERATE, Permissions.ADMIN]
+            'User': [Permission.FOLLOW, Permission.COMMENT, Permission.WRITE],
+            'Moderator': [Permission.FOLLOW, Permission.COMMENT, Permission.WRITE, Permission.MODERATE],
+            'Administrator': [Permission.FOLLOW, Permission.COMMENT, Permission.WRITE, Permission.MODERATE, Permission.ADMIN]
         }
 
         default_role= 'User'
@@ -86,7 +86,7 @@ class User(UserMixin, db.Model):
         return self.role is not None and self.role.has_permission(perm)
 
     def is_administrator(self):
-        return self.can(Permissions.ADMIN)
+        return self.can(Permission.ADMIN)
 
     @property
     def password(self) -> None:
