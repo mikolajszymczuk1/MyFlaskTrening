@@ -4,6 +4,7 @@ from . import login_manager
 from flask_login import UserMixin, AnonymousUserMixin
 from flask import current_app
 from itsdangerous.url_safe import URLSafeSerializer
+from sqlalchemy.sql import func
 
 
 class Permission:
@@ -68,6 +69,11 @@ class Role(db.Model):
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64))
+    location = db.Column(db.String(64))
+    about_me = db.Column(db.Text())
+    member_since = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    last_seen = db.Column(db.DateTime(timezone=True), onupdate=func.now())
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
@@ -87,6 +93,11 @@ class User(UserMixin, db.Model):
 
     def is_administrator(self):
         return self.can(Permission.ADMIN)
+
+    def ping(self):
+        self.last_seen = func.now()
+        db.session.add(self)
+        db.session.commit()
 
     @property
     def password(self) -> None:
