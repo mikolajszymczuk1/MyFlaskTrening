@@ -73,7 +73,7 @@ class User(UserMixin, db.Model):
     location = db.Column(db.String(64))
     about_me = db.Column(db.Text())
     member_since = db.Column(db.DateTime(timezone=True), server_default=func.now())
-    last_seen = db.Column(db.DateTime(timezone=True), onupdate=func.now())
+    last_seen = db.Column(db.DateTime(timezone=True), server_default=func.now())
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))

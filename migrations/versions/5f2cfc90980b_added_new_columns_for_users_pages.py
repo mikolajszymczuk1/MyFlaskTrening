@@ -1,8 +1,8 @@
-"""Added columns for user profiles
+"""Added new columns for users' pages
 
-Revision ID: 43000f220815
+Revision ID: 5f2cfc90980b
 Revises: 15c8ff773b7d
-Create Date: 2022-08-24 23:58:20.803343
+Create Date: 2022-08-25 23:39:50.272828
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '43000f220815'
+revision = '5f2cfc90980b'
 down_revision = '15c8ff773b7d'
 branch_labels = None
 depends_on = None
@@ -22,7 +22,7 @@ def upgrade():
     op.add_column('users', sa.Column('location', sa.String(length=64), nullable=True))
     op.add_column('users', sa.Column('about_me', sa.Text(), nullable=True))
     op.add_column('users', sa.Column('member_since', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True))
-    op.add_column('users', sa.Column('last_seen', sa.DateTime(timezone=True), nullable=True))
+    op.add_column('users', sa.Column('last_seen', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True))
     # ### end Alembic commands ###
 
 
