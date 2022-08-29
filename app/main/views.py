@@ -1,17 +1,24 @@
 from flask import render_template, flash, redirect, url_for
 from . import main
 from .. import db
-from ..models import User
+from ..models import Permission, User, Post
 from flask_login import login_required, current_user
-from .forms import EditProfileAdminForm, EditProfileForm
+from .forms import EditProfileAdminForm, EditProfileForm, PostForm
 from ..decorators import admin_required
 
 
 # Index endpoint
 @main.route('/', methods=['GET', 'POST'])
 def index():
-    all_users = User.query.all()
-    return render_template('index.html', users=all_users)
+    form = PostForm()
+    if current_user.can(Permission.WRITE) and form.validate_on_submit():
+        post = Post(body=form.body.data, author=current_user._get_current_object())
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('.index'))
+
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    return render_template('index.html', form=form, posts=posts)
 
 
 # User endpoint

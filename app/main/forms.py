@@ -43,3 +43,8 @@ class EditProfileAdminForm(FlaskForm):
     def validate_username(self, field):
         if field.data != self.user.username and User.query.filter_by(username=field.data).first():
             raise ValidationError('This username is currently in use')
+
+
+class PostForm(FlaskForm):
+    body = TextAreaField("What would you like to write about ?", validators=[DataRequired()])
+    submit = SubmitField('Send')

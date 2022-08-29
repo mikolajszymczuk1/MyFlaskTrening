@@ -21,24 +21,32 @@
   {% endif %}
 </div>
 
-{% if users %}
-<table class="table table-striped">
-  <thead>
-    <th>id</th>
-    <th>username</th>
-  </thead>
+<div>
+  {% if current_user.can(Permission.WRITE) %}
+    {{ wtf.quick_form(form) }}
+  {% endif %}
+</div>
 
-  <tbody>
-    {% for user in users %}
-      <tr>
-        <td>{{ user.id }}</td>
-        <td>{{ user.username }}</td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% else %}
-<p>No users !</p>
-{% endif %}
+<ul class="posts">
+  {% for post in posts %}
+    <li class="post">
+      <div class="profile-thumbnail">
+        <a href="{{ url_for('.user', username=post.author.username) }}">
+          <img class="img-rounded profile-thumbnail" src="{{ post.author.gravatar(size=40) }}" alt="">
+        </a>
+      </div>
+
+      <div class="post-content">
+        <div class="post-date">{{ post.timestamp }}</div>
+        <div class="post-author">
+          <a href="{{ url_for('.user', username=post.author.username) }}">
+            {{ post.author.username }}
+          </a>
+        </div>
+        <div class="post-body">{{ post.body }}</div>
+      </div>
+    </li>
+  {% endfor %}
+</ul>
 
 {% endblock %}

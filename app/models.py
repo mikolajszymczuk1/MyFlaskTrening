@@ -1,4 +1,5 @@
 import hashlib
+from time import timezone
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import login_manager
@@ -14,6 +15,14 @@ class Permission:
     WRITE = 4
     MODERATE = 8
     ADMIN = 16
+
+
+class Post(db.Model):
+    __tablename__ = 'posts'
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime(timezone=True), index=True, server_default=func.now())
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 
 class Role(db.Model):
@@ -81,6 +90,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
     avatar_hash = db.Column(db.String(32))
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
