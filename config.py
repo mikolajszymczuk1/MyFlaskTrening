@@ -17,6 +17,7 @@ class Config:
     APP_MAIL_SENDER = 'App Admin <fela55555@wp.pl>'
     APP_ADMIN = os.getenv('APP_ADMIN')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    APP_POSTS_PER_PAGE=10
 
     @staticmethod
     def init_app(app):
