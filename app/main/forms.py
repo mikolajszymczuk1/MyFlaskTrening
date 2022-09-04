@@ -49,3 +49,8 @@ class EditProfileAdminForm(FlaskForm):
 class PostForm(FlaskForm):
     body = PageDownField("What would you like to write about ?", validators=[DataRequired()])
     submit = SubmitField('Send')
+
+
+class CommentForm(FlaskForm):
+    body = PageDownField("", validators=[DataRequired()])
+    submit = SubmitField('Send')
