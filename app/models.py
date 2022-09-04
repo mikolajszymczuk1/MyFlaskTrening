@@ -1,5 +1,4 @@
 import hashlib, bleach
-from time import timezone
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import login_manager
@@ -16,6 +15,13 @@ class Permission:
     WRITE = 4
     MODERATE = 8
     ADMIN = 16
+
+
+class Follow(db.Model):
+    __tablename__ = 'follows'
+    follower_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    timestamp = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
 
 class Post(db.Model):
@@ -107,8 +113,23 @@ class User(UserMixin, db.Model):
     avatar_hash = db.Column(db.String(32))
     posts = db.relationship('Post', backref='author', lazy='dynamic')
 
+    followed = db.relationship(
+        'Follow', foreign_keys=[Follow.follower_id],
+        backref=db.backref('follower', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan'
+    )
+
+    followers = db.relationship(
+        'Follow', foreign_keys=[Follow.followed_id],
+        backref=db.backref('followed', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan'
+    )
+
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
+        self.follow(self)
         if self.role is None:
             if self.email == current_app.config['APP_ADMIN']:
                 self.role = Role.query.filter_by(name='Administrator').first()
@@ -117,6 +138,14 @@ class User(UserMixin, db.Model):
 
         if self.email is not None and self.avatar_hash is None:
             self.avatar_hash = self.gravatar_hash()
+
+    @staticmethod
+    def add_self_follows():
+        for user in User.query.all():
+            if not user.is_following(user):
+                user.follow(user)
+                db.session.add(user)
+                db.session.commit()
 
     def can(self, perm):
         return self.role is not None and self.role.has_permission(perm)
@@ -140,6 +169,10 @@ class User(UserMixin, db.Model):
 
         hash = self.avatar_hash or self.gravatar_hash()
         return f'{url}/{hash}?s={size}&d={default}&r={rating}'
+
+    @property
+    def followed_posts(self):
+        return Post.query.join(Follow, Follow.followed_id == Post.author_id).filter(Follow.follower_id == self.id)
 
     @property
     def password(self) -> None:
@@ -181,6 +214,27 @@ class User(UserMixin, db.Model):
 
         db.session.add(self)
         return True
+
+    def follow(self, user):
+        if not self.is_following(user):
+            f = Follow(follower=self, followed=user)
+            db.session.add(f)
+
+    def unfollow(self, user):
+        f = self.followed.filter_by(followed_id=user.id).first()
+        if f: db.session.delete(f)
+
+    def is_following(self, user):
+        if user.id is None:
+            return False
+
+        return self.followed.filter_by(followed_id=user.id).first() is not None
+
+    def is_followed_by(self, user):
+        if user.id is None:
+            return False
+
+        return self.followers.filter_by(follower_id=user.id).first() is not None
 
 
 @login_manager.user_loader

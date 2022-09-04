@@ -18,6 +18,7 @@ class Config:
     APP_ADMIN = os.getenv('APP_ADMIN')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     APP_POSTS_PER_PAGE=10
+    APP_FOLLOWERS_PER_PAGE=10
 
     @staticmethod
     def init_app(app):

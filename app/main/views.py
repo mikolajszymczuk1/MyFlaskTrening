@@ -1,10 +1,10 @@
-from flask import render_template, flash, redirect, url_for, abort, current_app, request
+from flask import render_template, flash, redirect, url_for, abort, current_app, request, make_response
 from . import main
 from .. import db
 from ..models import Permission, User, Post
 from flask_login import login_required, current_user
 from .forms import EditProfileAdminForm, EditProfileForm, PostForm
-from ..decorators import admin_required
+from ..decorators import admin_required, permission_required
 
 
 # Index endpoint
@@ -18,13 +18,22 @@ def index():
         return redirect(url_for('.index'))
 
     page = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
+    show_followed = False
+    if current_user.is_authenticated:
+        show_followed = bool(request.cookies.get('show_followed', ''))
+
+    if show_followed:
+        query = current_user.followed_posts
+    else:
+        query = Post.query
+
+    pagination = query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['APP_POSTS_PER_PAGE'],
         error_out=False
     )
 
     posts = pagination.items
-    return render_template('index.html', form=form, posts=posts, pagination=pagination)
+    return render_template('index.html', form=form, posts=posts, pagination=pagination, show_followed=show_followed)
 
 
 # User endpoint
@@ -107,3 +116,93 @@ def edit(id):
 
     form.body.data = post.body
     return render_template('editPost.html', form=form)
+
+
+@main.get('/follow/<string:username>')
+@login_required
+@permission_required(Permission.FOLLOW)
+def follow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('Invalid user')
+        return redirect(url_for('.index'))
+
+    if current_user.is_following(user):
+        flash('You are already following this user')
+        return redirect(url_for('.user', username=username))
+
+    current_user.follow(user)
+    db.session.commit()
+    flash(f'You start following the user: {username}')
+    return redirect(url_for('.user', username=username))
+
+
+@main.get('/unfollow/<string:username>')
+@login_required
+@permission_required(Permission.FOLLOW)
+def unfollow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('Invalid user')
+        return redirect(url_for('.index'))
+
+    if not current_user.is_following(user):
+        flash('You are not following this user')
+        return redirect(url_for('.user', username=username))
+
+    current_user.unfollow(user)
+    db.session.commit()
+    flash(f'You have stopped following the user: {username}')
+    return redirect(url_for('.user', username=username))
+
+
+@main.get('/followers/<string:username>')
+def followers(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('Invalid user')
+        return redirect('.index')
+
+    page = request.args.get('page', 1, type=int)
+    pagination = user.followers.paginate(
+        page, per_page=current_app.config['APP_FOLLOWERS_PER_PAGE'],
+        error_out=False
+    )
+
+    follows = [{ 'user': item.follower, 'timestamp': item.timestamp } for item in pagination.items]
+    return render_template('followers.html', user=user, title='Followers of the user', endpoint='.followers',
+        pagination=pagination, follows=follows)
+
+
+@main.get('/followed_by/<string:username>')
+def followed_by(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('Invalid user')
+        return redirect('.index')
+
+    page = request.args.get('page', 1, type=int)
+    pagination = user.followed.paginate(
+        page, per_page=current_app.config['APP_FOLLOWERS_PER_PAGE'],
+        error_out=False
+    )
+
+    follows = [{ 'user': item.followed, 'timestamp': item.timestamp } for item in pagination.items]
+    return render_template('followers.html', user=user, title='Followed by', endpoint='.followed_by',
+        pagination=pagination, follows=follows)
+
+
+@main.get('/all')
+@login_required
+def show_all():
+    resp = make_response(redirect(url_for('.index')))
+    resp.set_cookie('show_followed', '', max_age=30*25*60*60)
+    return resp
+
+
+@main.get('/followed')
+@login_required
+def show_followed():
+    resp = make_response(redirect(url_for('.index')))
+    resp.set_cookie('show_followed', '1', max_age=30*24*60*60)
+    return resp
