@@ -1,4 +1,4 @@
-import hashlib, bleach
+import hashlib, bleach, jwt, datetime
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import login_manager
@@ -257,6 +257,25 @@ class User(UserMixin, db.Model):
             return False
 
         return self.followers.filter_by(follower_id=user.id).first() is not None
+
+    def generate_auth_token(self, expiration=3600):
+        return jwt.encode(
+            {
+                'id': self.id,
+                'exp': datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(seconds=expiration)
+            },
+            current_app.config['SECRET_KEY'],
+            algorithm='HS256'
+        )
+
+    @staticmethod
+    def verify_auth_token(token):
+        try:
+            data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
+        except:
+            return None
+
+        return User.query.get(data['id'])
 
 
 @login_manager.user_loader
