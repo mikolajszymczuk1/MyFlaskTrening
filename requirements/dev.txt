@@ -1,2 +1,3 @@
 -r common.txt
 faker==14.2.0
+coverage==6.4.4

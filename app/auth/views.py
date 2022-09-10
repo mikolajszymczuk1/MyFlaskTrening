@@ -19,6 +19,7 @@ def before_request():
     if current_user.is_authenticated:
         current_user.ping()
         if not current_user.confirmed \
+                and request.endpoint \
                 and request.blueprint != 'auth' \
                 and request.endpoint != 'static':
             return redirect(url_for('auth.unconfirmed'))
@@ -62,7 +63,7 @@ def register():
         token = user.generate_confirmation_token()
         send_email(user.email, 'Confirm your account', 'auth/mail/confirm', user=user, token=token)
         flash('We have sent a message with an activation link to your e-mail address')
-        return redirect(url_for('main.index'))
+        return redirect(url_for('auth.login'))
 
     return render_template('auth/register.html', form=form)
 
