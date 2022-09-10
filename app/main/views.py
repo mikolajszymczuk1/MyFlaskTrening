@@ -1,11 +1,20 @@
-from flask import render_template, flash, redirect, url_for, abort, current_app, request, make_response
+from flask import (
+    render_template,
+    flash, redirect,
+    url_for,
+    abort,
+    current_app,
+    request,
+    make_response
+)
+
 from . import main
 from .. import db
 from ..models import Permission, User, Post, Comment
 from flask_login import login_required, current_user
 from .forms import EditProfileAdminForm, EditProfileForm, PostForm, CommentForm
 from ..decorators import admin_required, permission_required
-
+from flask_sqlalchemy import get_debug_queries
 
 # Index endpoint
 @main.route('/', methods=['GET', 'POST'])
@@ -265,3 +274,14 @@ def moderate_disable(id):
     db.session.add(comment)
     db.session.commit()
     return redirect(url_for('.moderate', page=request.args.get('page', 1, type=int)))
+
+
+@main.after_app_request
+def after_request(response):
+    for query in get_debug_queries():
+        if query.duration >= current_app.config['APP_SLOW_DB_QUERY_TIME']:
+            current_app.logger.warning(
+                f'Slow query: {query.statement}\nParameters: {query.parameters}\nTime: {query.duration}\nContext: {query.context}'
+            )
+
+    return response

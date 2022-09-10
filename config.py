@@ -17,9 +17,11 @@ class Config:
     APP_MAIL_SENDER = 'App Admin <fela55555@wp.pl>'
     APP_ADMIN = os.getenv('APP_ADMIN')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_RECORD_QUERIES = True
     APP_POSTS_PER_PAGE=10
     APP_FOLLOWERS_PER_PAGE=10
     APP_COMMENTS_PER_PAGE=10
+    APP_SLOW_DB_QUERY_TIME = 0.5
 
     @staticmethod
     def init_app(app):

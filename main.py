@@ -14,6 +14,10 @@ if environ.get('FLASK_COVERAGE'):
 app = create_app(getenv('FLASK_CONFIG') or 'default')
 migrate = Migrate(app, db)
 
+# -------- Profiler --------
+# from werkzeug.middleware.profiler import ProfilerMiddleware
+# app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions = [30])
+# --------------------------
 
 @app.shell_context_processor
 def make_shell_context():
@@ -41,3 +45,12 @@ def test(coverage) -> None:
         COV.html_report(directory=covdir)
         print(f'HTML version: file://{covdir}/index.html')
         COV.erase()
+
+
+# @app.cli.command()
+# @click.option('--length', default=25, help='Number of function used in profiler report')
+# @click.option('--profile-dir', default=None, help='Directory where report data are saved')
+# def profile(length, profile_dir):
+#     from werkzeug.middleware.profiler import ProfilerMiddleware
+#     app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[length], profile_dir=profile_dir)
+#     app.run(debug=False)
