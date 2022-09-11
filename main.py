@@ -2,7 +2,7 @@ import sys, click
 from os import getenv, environ, execvp, path
 from app import create_app, db
 from app.models import User, Role
-from flask_migrate import Migrate
+from flask_migrate import Migrate, upgrade
 
 
 COV = None
@@ -54,3 +54,10 @@ def test(coverage) -> None:
 #     from werkzeug.middleware.profiler import ProfilerMiddleware
 #     app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[length], profile_dir=profile_dir)
 #     app.run(debug=False)
+
+
+@app.cli.command()
+def deploy():
+    upgrade()
+    Role.insert_roles()
+    User.add_self_follows()

@@ -1,5 +1,7 @@
+#!/bin/bash
+
 # [Python venv]
 source ./env/bin/activate
 
-# [Flas]
+# [Flask]
 flask run
